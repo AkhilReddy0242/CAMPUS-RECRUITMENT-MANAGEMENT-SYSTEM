@@ -1,0 +1,192 @@
+.App {
+  text-align: center;
+}
+
+.App-logo {
+  height: 40vmin;
+  pointer-events: none;
+}
+.Navbar .inernav{
+  display: flex;
+  margin-left: auto;
+  padding-right: 10px;
+}
+.Navbar .inernav .log-in,
+.Navbar .inernav .admin{
+  padding: 1rem 1rem 1rem 1rem;
+  cursor: pointer;
+  margin-right: auto;
+}
+.Navbar .logo{
+  margin-right: auto;
+  margin-left: 10px;
+  display: flex;
+}
+.Navbar .logo .title{
+  margin-left: 30px;
+  padding-top: 10px;
+  width: 320px;
+  font-size: 30px;
+  font-weight:bold;
+  font-style:inherit;
+  color: rgb(16, 23, 27);
+}
+img{
+  margin-top: -20px;
+  display: inline;
+  left: 0;
+  object-fit: contain;
+  width: 100%;
+}
+a:hover{
+  box-shadow: 0 6px 20px rgb(0 0 0  / 17%);
+}
+.Navbar img{
+  margin-top: auto;
+}
+.Navbar{
+  background-color: rgb(146, 179, 235);
+  margin-bottom: 20px;
+  text-align: end;
+  display: grid;
+  grid-template-columns: 10% 90%;
+}
+.login{
+  width: 400px;
+  height: 450px;
+  position: absolute;
+  background-color: white;
+  box-shadow:  0 0 100px rgba(0, 0, 0, 0.87);
+  top:0;
+  padding: 40px;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 9999;
+  margin: auto;
+  display: none;
+}
+.login > div {
+  font-size: 30px;
+  font-weight: 700;
+  display: block;
+  text-align: center;
+}
+.login > .close > div {
+  cursor: pointer;
+  font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+}
+.login .log .avatar{
+  text-align: center;
+  margin-left: 90px;
+  margin-right: 50px;
+  margin-top: 20px;
+}
+.login > .log > form{
+  display: flex;
+  flex-direction: column;
+  margin-top: 10px;
+}
+.login > .log > form > input{
+  margin-top: 10px;
+  margin-bottom: 10px;
+  border: none;
+  border-bottom: 1.5px solid black;
+}
+.login > .log > form > input:focus{
+  outline: none;
+}
+.login > .log > form > button{
+  margin-top: 10px;
+  height: 30px;
+  background-color: gray;
+  color: aliceblue;
+}
+.login .log .forget{
+  font-size:15px;
+  margin-top: 20px;
+  font-weight:100 ;
+  background-color: rgb(243, 176, 176);
+}
+.login .log .forget span{
+  color: blue;
+  cursor: pointer;
+}
+
+.admin-log{
+  width: 400px;
+  height: 450px;
+  position: absolute;
+  background-color: white;
+  box-shadow:  0 0 100px rgba(0, 0, 0, 0.87);
+  top:0;
+  padding: 40px;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 9999;
+  margin: auto;
+  display: none;
+}
+.admin-log > div {
+  font-size: 30px;
+  font-weight: 700;
+  display: block;
+  text-align: center;
+}
+.admin-log > .close > div {
+  cursor: pointer;
+  font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+}
+.admin-log .admin-login .avatar{
+  text-align: center;
+  margin-left: 90px;
+  margin-right: 50px;
+  margin-top: 20px;
+}
+.admin-log > .admin-login > form{
+  display: flex;
+  flex-direction: column;
+  margin-top: 10px;
+}
+.admin-log > .admin-login > form > input{
+  margin-top: 10px;
+  margin-bottom: 10px;
+  border: none;
+  border-bottom: 1.5px solid black;
+}
+.admin-log > .admin-login > form > input:focus{
+  outline: none;
+}
+.admin-log > .admin-login > form > button{
+  margin-top: 10px;
+  height: 30px;
+  background-color: gray;
+  color: aliceblue;
+}
+.admin-log .admin-login .forget{
+  font-size:15px;
+  margin-top: 20px;
+  font-weight:100 ;
+  background-color: rgb(243, 176, 176);
+}
+.admin-log .admin-login .forget span{
+  color: blue;
+  cursor: pointer;
+}
+
+@media only screen and (max-width: 600px) {
+  .Navbar{
+    display: flex;
+    flex-flow: column;
+    padding:unset;
+  }
+  a{
+    font-size: 15px;
+    margin: auto;
+    padding: unset;
+    text-align: center;
+  }
+}
+
+
