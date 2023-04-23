@@ -9,18 +9,225 @@ import PersonSearchIcon from "@mui/icons-material/PersonSearch";
 import PersonIcon from "@mui/icons-material/Person";
 import MenuIcon from "@mui/icons-material/Menu";
 import "./Dashboard.css";
-import Companies from "./Companies";
-import Students from "./Students";
+import { Button } from '@mui/material';
+import { Delete } from '@mui/icons-material';
 import LogoutIcon from '@mui/icons-material/Logout';
-import { db, auth } from "../Firebase";
+import { db, auth,batch } from "../Firebase";
 import { useHistory } from "react-router";
 import { Bar } from 'react-chartjs-2';
 import emailjs from 'emailjs-com'
-
+import '../App.css'
+import './Companies.css'
 
 function Dashboard() {
   var [click, setClick] = useState('dash')
   var [cName, setCName] = useState(["active", "", "", "", ""])
+  const [selectedStudentIds, setSelectedStudentIds] = useState([]);
+  const [selectedCompanies, setSelectedComapnies] = useState([]);
+
+
+
+  const [selectedYear, setSelectedYear] = useState("");
+  const [insights, setInsights] = useState({});
+  const [chartData, setChartData] = useState({});
+
+  useEffect(() => {
+    // fetch all insights data from firebase and set it to the insights state
+    const fetchData = async () => {
+      const insightsRef = db.collection("insights");
+      const snapshot = await insightsRef.get();
+      const data = snapshot.docs.reduce((obj, doc) => {
+        obj[doc.id] = doc.data().value;
+        return obj;
+      }, {});
+      setInsights(data);
+    };
+    fetchData();
+  }, []);
+
+  useEffect(() => {
+    // transform insights data into chart data
+    const chartLabels = Object.keys(insights);
+    const chartValues = Object.values(insights);
+    const data = {
+      labels: chartLabels,
+      datasets: [
+        {
+          label: "Insights",
+          data: chartValues,
+          backgroundColor: "rgba(75,192,192,1)",
+          borderWidth: 1,
+        },
+      ],
+    };
+    setChartData(data);
+  }, [insights]);
+
+  const handleYearChange = (event) => {
+    setSelectedYear(event.target.value);
+  };
+  const [inputValue, setInputValue] = useState("");
+  const handleAddYear = () => {
+    if (inputValue) {
+      const newInsight = {
+        value: 0
+      };
+      db.collection("insights")
+        .doc(inputValue)
+        .set(newInsight)
+        .then(() => {
+          setInsights((prevState) => ({
+            ...prevState,
+            [inputValue]: newInsight
+          }));
+          setInputValue("");
+        })
+        .catch((error) => {
+          console.error("Error adding new year: ", error);
+        });
+    }
+  };
+
+  const handleDeleteYear = () => {
+    if (selectedYear) {
+      db.collection("insights")
+        .doc(selectedYear)
+        .delete()
+        .then(() => {
+          setInsights((prevState) => {
+            const newState = { ...prevState };
+            delete newState[selectedYear];
+            return newState;
+          });
+          setSelectedYear("");
+        })
+        .catch((error) => {
+          console.error("Error deleting year: ", error);
+        });
+    }
+  };
+
+  const handleAddInsight = async () => {
+    console.log(selectedYear)
+    if(selectedYear==="")
+    {
+      window.confirm("Please select the year");
+      return;
+    }
+    const value = selectedYear;
+    const parsedValue = parseInt(value, 10);
+
+    if (!isNaN(parsedValue)) {
+      setSelectedYear(parsedValue);
+    } else {
+      window.confirm("Enter only the Numbers");
+      return;
+    }
+    // add insight value to firebase
+    const insightRef = db.collection("insights").doc(selectedYear);
+    const insightDoc = await insightRef.get();
+    if (insightDoc.exists) {
+      const value = insightDoc.data().value;
+      const newValue = value + parseInt(inputValue);
+      await insightRef.update({ value: newValue });
+      setInsights({ ...insights, [selectedYear]: newValue });
+    } else {
+      await insightRef.set({ value: parseInt(inputValue) });
+      setInsights({ ...insights, [selectedYear]: parseInt(inputValue) });
+    }
+    setInputValue("");
+  };
+
+
+
+  const handleInputChange = (event) => {
+    setInputValue(event.target.value);
+  };
+
+
+  const handleCheckboxChange = event => {
+    const value= event.target.value;
+    if (event.target.checked) {
+      setSelectedStudentIds([...selectedStudentIds, value]);
+    } else {
+      setSelectedStudentIds(selectedStudentIds.filter(id => id !== value));
+    }
+  };
+  const handleCheckboxChangeforCompany = event => {
+    const value= event.target.value;
+    if (event.target.checked) {
+      setSelectedComapnies([...selectedCompanies, value]);
+    } else {
+      setSelectedComapnies(selectedCompanies.filter(id => id !== value));
+    }
+  };
+
+  const deleteSelectedComapnies = async () => {
+    try {
+      console.log(selectedCompanies)
+      // Delete student documents and corresponding authentication
+      for (const companyID of selectedCompanies) {
+        const companyRef = db.collection("Companies").doc(companyID);
+        batch.delete(companyRef);
+      }
+      // Commit the batch
+      await batch.commit();
+
+      console.log("Selected companies have been successfully deleted.");
+      setSelectedComapnies([]);
+    } catch (error) {
+      console.error(`Error deleting selected companies: ${error.message}`);
+    }
+  };
+
+
+  const deleteSelectedStudents = async () => {
+    try {
+      console.log(selectedStudentIds)
+      // Delete student documents and corresponding authentication
+      for (const studentId of selectedStudentIds) {
+        const studentRef = db.collection("Students").doc(studentId);
+        //const authUser = await auth.getUser(studentId);
+        //const authRef = auth.deleteUser(studentId);
+        batch.delete(studentRef);
+       // batch.delete(authRef);
+      }
+
+      // Commit the batch
+      await batch.commit();
+
+      console.log("Selected students and their authentication have been successfully deleted.");
+      setSelectedStudentIds([]);
+    } catch (error) {
+      console.error(`Error deleting selected students and their authentication: ${error.message}`);
+    }
+  };
+  var [clicker, setClicker] = useState(false)
+  const [applicant, setApplicant] = useState([])
+    const applicants = async (docid) => {
+      console.log(docid);
+        db.collection("Companies").doc(docid).collection("Applicants").onSnapshot(async (snapshot) => {
+            async function geter() {
+                var temp = []
+                for (let doc of snapshot.docs) {
+                  console.log(doc)
+                    const snapsho = await db.collection('Students').doc(doc.data().uid).get();
+                    temp.push({
+                        name: snapsho.data().sname,
+                        sid: snapsho.data().sid,
+                        email: snapsho.data().semail,
+                        resume: snapsho.data().resume,
+                    })
+                }
+                console.log(temp)
+                return temp;
+            }
+            await setApplicant(await geter())
+            //console.log(applicant)
+            localStorage.setItem('data', JSON.stringify(await geter()))
+            window.open('applicants-list')
+        })
+    }
   const [companies, setCompanies] = useState([]);
   useEffect(() => {
     db.collection("Companies").onSnapshot((snapshot) => {
@@ -50,6 +257,7 @@ function Dashboard() {
           suser: doc.data().sid,
           semail: doc.data().semail,
           resume : doc.data().resume,
+          id : doc.id
         }))
       );
     });
@@ -61,6 +269,7 @@ function Dashboard() {
     const password = document.getElementById("suser").value;
     const sname = document.getElementById("sname").value;
     //creating user authentication
+    console.log(students);
     if(password.length>=6)
     {
       try {
@@ -89,7 +298,7 @@ function Dashboard() {
     }
     
   };
-  const sendMailstoEligible = (eligibilty,company) =>{
+  const sendMailstoEligible = (eligibilty,company,date) =>{
     db.collection("Students")
       .where("cgpa", ">=", eligibilty)
       .get()
@@ -97,7 +306,8 @@ function Dashboard() {
           snap.forEach(doc => {
               emailjs.send(process.env.REACT_APP_EMAIL_SERVICE,process.env.REACT_APP_EMAIL_TEMPLATE,{
                 subject: `${company} Placement Drive`,
-                message: `You are eligible for ${company} Placement Drive \nApply through our Placements Portal process.env.REACT_APP_LINK`,
+                message: `You are eligible for ${company} Placement Drive \nApply through our Placements Portal`,
+                LastDate : date,
                 toemail: doc.data().semail,
                 },process.env.REACT_APP_USER_ID).then((result) => {
                   console.log(result.text + " "+doc.data().semail);
@@ -115,7 +325,16 @@ function Dashboard() {
     let desc = document.getElementById("desc").value;
     let cutOff = document.getElementById("cutOff").value;
     let branch = document.getElementById("branch").value;
-    let date = document.getElementById("date").value;
+    const date = document.getElementById("date").value;
+    console.log(date);
+    const currentDate2 = new Date();
+    const date1=new Date(date);
+    if(date1 < currentDate2)
+    {
+      console.log(date+"is present");
+      alert("enter the future date");
+      return;
+    }
     if(name!==''&&title!==''&&desc!==''&&cutOff!==''&&branch!==''&&date!==''){
       db.collection("Companies").add({
       cName: name,
@@ -128,9 +347,13 @@ function Dashboard() {
     });
     window.confirm("Company Added");
     document.getElementById('cform').reset();
-    sendMailstoEligible(cutOff,name);
+    sendMailstoEligible(cutOff,name,date);
   }
   else{
+    if(date < currentDate2)
+    {
+      
+    }
     alert("Fill All Fields")
   }
   };
@@ -254,19 +477,27 @@ function Dashboard() {
         <main>
         <div className="cards">
                           {click==='dash'?<div className="card-single">
-                                              {companies.map((company) => {
-                                                return (
-                                                <Companies
-                                                cname={company.cname}
-                                                title={company.title}
-                                                cutOff={company.cutOff}
-                                                description={company.description}
-                                                branches={company.branches}
-                                                date={company.date}
-                                                docid={company.docid}
-                                                />
-                                              );
-                                              })}
+                          {companies.map((company) => (
+                                  <div>
+                                    <div className="box" id="box">
+                                        <div className="company-name">{company.cname}</div>
+                                        <div className="title">Job Title : {company.title}</div>
+                                        <div className="min-qualify">Cut off : {company.cutOff}</div>
+                                        <div className="eligible">Eligible branches : {company.branches}</div>
+                                        <div className="last-date">Last Date to Apply : {company.date}</div>
+                                        {clicker ? <div classname='description'>Job Description : <br /> {company.description}</div> : <></>}
+                                        {clicker ? <></> : <div className="viewmore" onClick={() => { setClicker(true) }}> View more&gt; </div>}
+                                        <div className="buttons">
+                                            <div className="Cancel">
+                                                {clicker ? <button onClick={() => { setClicker(false) }} >Cancel</button> : <></>}
+                                            </div>
+                                            <div style={{ display: localStorage.getItem("type") === 'admin' ? 'block' : 'none' }} className="Apply">
+                                                {clicker ? <button onClick={() => applicants(company.docid)}>Applicants </button> : <></>}
+                                            </div>
+                                        </div>
+                                    </div>
+                                  </div>
+                                  ))}        
                             </div>: click==='addstudent'?
                             <div className="add-student">
                               <div className="student">
@@ -280,16 +511,30 @@ function Dashboard() {
                               </div>
                             </div>: click==='viewstudent'?
                             <div className="stud">
-                                {students.map((student) => {
-                                  return (
-                                  <Students
-                                  sname={student.sname}
-                                  suser={student.suser}
-                                  semail={student.semail}
-                                  resume={student.resume}
-                                  />
-                                );
-                                })}
+                                <div>
+                                  <Button
+                                    variant="contained"
+                                    color="error"
+                                    startIcon={<Delete />}
+                                    onClick={deleteSelectedStudents} disabled={!selectedStudentIds.length}
+                                    style={{   color: '#fff'}}>
+                                    Delete
+                                  </Button>
+                                {students.map(student => (
+                                    <div key={student.id}>
+                                      <div className="student-box">
+                                        <input type="checkbox"  name="selectedStudents" value={student.id}
+                                        checked={selectedStudentIds.includes(student.id)}
+                                            onChange={handleCheckboxChange}/>
+                                        <div className="student-name" >Name : {student.sname}</div>
+                                        <div className="student-roll" >Roll no : {student.suser}</div>
+                                        <div className="student-email" >Email Id : {student.semail}</div>
+                                        <div className="student-resume"><a href={student.resume}>resume</a> </div>
+                                      </div>
+                                    </div>
+                                ))}
+        
+                            </div>
                             </div>: click==='addcompany'?
                             <div className="add-company">
                             <div className="add">
@@ -313,49 +558,73 @@ function Dashboard() {
                             </form>
                             </div>
                             </div>: click==='viewcompany'?
-                              <div className="card-single">
-                              {companies.map((company) => {
-                                return (
-                                <Companies
-                                cname={company.cname}
-                                title={company.title}
-                                cutOff={company.cutOff}
-                                description={company.description}
-                                branches={company.branches}
-                                date={company.date}
-                                />
-                              );
-                              })}
-                                </div>: 
-                                <><Bar
-                                data={{
-                                  labels: ['2016-2017', '2017-2018', '2018-2019', '2019-2020', '2020-2021', '2021-2022'],
-                                  datasets: [{
-                                    label: 'No of Students Selected',
-                                    data: [768, 1020, 1078, 961, 1026,1217],
-                                    backgroundColor: [
-                                        'rgba(255, 99, 132, 0.2)',
-                                        'rgba(54, 162, 235, 0.2)',
-                                        'rgba(255, 206, 86, 0.2)',
-                                        'rgba(75, 192, 192, 0.2)',
-                                        'rgba(153, 102, 255, 0.2)',
-                                        'rgba(255, 159, 64, 0.2)'
-                                    ],
-                                    borderColor: [
-                                        'rgba(255, 99, 132, 1)',
-                                        'rgba(54, 162, 235, 1)',
-                                        'rgba(255, 206, 86, 1)',
-                                        'rgba(75, 192, 192, 1)',
-                                        'rgba(153, 102, 255, 1)',
-                                        'rgba(255, 159, 64, 1)'
-                                    ],
-                                    borderWidth: 2
-                                }]
-                                }}
-                                    height={400}
-                                    width={500}
-                                    options={{ maintainAspectRatio: false }}
-                                /></>
+                            <div>
+                                <Button
+                                    variant="contained"
+                                    color="error"
+                                    startIcon={<Delete />}
+                                    onClick={deleteSelectedComapnies} disabled={!selectedCompanies.length}
+                                    style={{ color: '#fff'}}>
+                                    Delete
+                                  </Button>
+                                <div className="card-single">
+                                  {companies.map((company) => (
+                                  <div>
+                                    <div className="box" id="box">
+                                      <div>
+                                    <input type="checkbox"  name="selectedCompanies" value={company.docid}
+                                        checked={selectedCompanies.includes(company.docid)}
+                                            onChange={handleCheckboxChangeforCompany}/>&nbsp; <b className="company-name">{company.cname} </b>
+                                        </div>
+                                        <div className="title">Job Title : {company.title}</div>
+                                        <div className="min-qualify">Cut off : {company.cutOff}</div>
+                                        <div className="eligible">Eligible branches : {company.branches}</div>
+                                        <div className="last-date">Last Date to Apply : {company.date}</div>
+                                        <div classname='description'>Job Description : <br /> {company.description}</div>
+                                        <div className="buttons">
+                                            <div style={{ display: localStorage.getItem("type") === 'admin' ? 'block' : 'none' }} className="Apply">
+                                                <button onClick={() => applicants(company.docid)}>Applicants </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                  </div>
+                                  ))}
+                                </div>
+                              </div>: 
+                                <>
+                                  <div>
+                                  <div class="card-single">
+                                      <div class="box">
+                                        <div class="select-container">
+                                          <label for="year-select">Select Year:</label>
+                                          <select id="year-select" value={selectedYear} onChange={handleYearChange}>
+                                            <option value="">Select Year</option>
+                                            {Object.keys(insights).map((year) => (
+                                              <option key={year} value={year}>
+                                                {year}
+                                              </option>
+                                            ))}
+                                          </select>
+                                        </div>
+                                        <div class="add-insight-container">
+                                          <label for="year-select">Add Insight:</label>
+                                          <div class="input-button-container">
+                                            <input type="text" id="insight-input" value={inputValue} onChange={handleInputChange} />
+                                          </div>
+                                        </div>
+                                        <div class="add-year-container">
+                                        <button class="add-button" onClick={handleAddInsight}>Add</button> &emsp; &emsp;
+                                          <button class="add-year-button" onClick={handleAddYear}>Add Year</button>&emsp; &emsp;
+                                          <button class="add-year-button" onClick={handleDeleteYear}>Delete Year</button>
+                                        </div>
+                                      </div>
+                                    </div>
+
+                                  <br />
+                                  <br/>
+                                  <Bar data={chartData} />
+                                </div>
+                                </>
                   }
           </div>
         </main>

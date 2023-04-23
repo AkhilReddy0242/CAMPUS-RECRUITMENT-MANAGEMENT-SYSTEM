@@ -21,6 +21,76 @@
     z-index: 100;
     transition: width 300ms;
 }
+.box {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 10px;
+    border: 2px solid #ccc;
+    border-radius: 10px;
+  }
+  
+  .select-container {
+    padding-bottom: 20px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    max-width: 500px;
+  }
+  .select-container select {
+    font-size: 16px;
+    border-radius: 5px;
+    border: 2px solid #4b4b4b;
+    padding: 10px;
+    width: 75%;
+    max-width: 400px; /* Adjust this value to fit your desired width */
+  }
+  
+  .add-insight-container {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+  
+  .input-button-container {
+    display: flex;
+    gap: 10px;
+    max-width: 1000px;
+    max-height: 75%;
+  }
+
+  #insight-input{
+    border-radius: 5px;
+    border: 2px solid #4b4b4b;
+    padding: 10px;
+    width: 100%;
+    max-width: 1000px;
+  }
+  
+  .add-button {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    width: 75px;
+    height: 45px;
+    padding: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .add-year-container {
+    display: flex;
+    justify-content: center;
+  }
+  
+  .add-year-button {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+  }
 .sidebar-brand
 {
     height:90px;
@@ -266,32 +336,7 @@ padding-top:10px;
     background-color: gray;
     color: aliceblue;
   }
-  /*
-  .add-student > .student > form > div{
-      display: flex;
-      justify-content:space-evenly;
-      font-size:medium;
-      font-weight: 200;
-      padding: 1rem 2rem 1.5rem 1rem;
-  }
-  .add-student > .student > form > div >div> select{
-    margin-top: 20px;
-    margin-bottom: 20px;
-    border: none;
-    width: 200px;
-    height: 30px;
-}
-  .add-student > .student > form > div >div> input{
-    margin-top: 20px;
-    margin-bottom: 20px;
-    border: none;
-    border-bottom: 1.5px solid black;
-    width: 180px;
-}
-.add-student > .student > form > div >div> input:focus{
-    outline: none;
-}
-*/
+  
 .view-students{
     width: calc(100% - 300px);
     height: calc(100% - 50px);

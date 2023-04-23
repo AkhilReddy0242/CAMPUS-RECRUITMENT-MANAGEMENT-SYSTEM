@@ -16,12 +16,13 @@ const firebaseConfig = {
 const firebaseApp = firebase.initializeApp(firebaseConfig);
 
 const db = firebaseApp.firestore();
+const batch = firebase.firestore().batch();
 const auth = firebaseApp.auth();
 //const storage = getStorage(firebaseApp);
 const storage = firebase.storage();
 
 
-export { db, auth, storage};
+export { db, auth, storage, batch};
 
 /* const firebaseApp = firebase.initializeApp(firebaseConfig);
 const storage = getStorage(firebaseApp);

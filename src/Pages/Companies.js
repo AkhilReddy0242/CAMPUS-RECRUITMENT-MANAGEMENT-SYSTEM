@@ -1,10 +1,18 @@
 import React from 'react'
 import { useState } from 'react'
-import './Companies'
+import './Companies.css'
 import { db } from '../Firebase'
 function Companies(props) {
     var [click, setClick] = useState(false)
     const apply = () => {
+
+        const date1= new Date(props.date);
+        if(date1 < new Date())
+        {
+            alert("You cannot apply to this company. The last date to apply this company is "+ props.date);
+            return;
+        }
+        console.log(props.id);
         db.collection("Companies").doc(props.docid).onSnapshot((snapshot) => {
             let eligibilitycutOff = snapshot.data().cutOff;
             let eligibilitybranch = snapshot.data().branches;
@@ -14,44 +22,30 @@ function Companies(props) {
             let userbranch = props.userdata.branch;
             console.log(eligibilitybranch,userbranch)
             if (usercgpa >= eligibilitycutOff && eligibilitybranch.includes(userbranch)) {
-                const upload = db.collection('Companies').doc(props.docid).collection("Applicants").doc(localStorage.getItem("uid"));
+                const upload = db.collection('Companies').doc(props.docid).collection("Applicants").doc(props.id);
+                upload.get().then((docSnapshot) => {
+                    if (docSnapshot.exists) {
+                      // Do something if the document exists
+                      window.confirm("Already Applied to this company!!")
+                    } else {
+                      // Do something if the document does not exist
+                      upload.set({
+                        uid: props.id
+                    })
+                    window.confirm("All the best for you!!")
+                    }
+                  }).catch((error) => {
+                    console.error(`Error getting document with ID ${props.id}: `, error);
+                  });
                 //console.log(props.docid)
-                upload.set({
-                    uid: localStorage.getItem("uid")
-                })
-                window.confirm("All the best for you!!")
+                
             }
-            else{
+            else{   
                 window.confirm("You are not eligible")
             }
         })
 
     }
-    const [applicant, setApplicant] = useState([])
-    const applicants = async () => {
-
-        db.collection("Companies").doc(props.docid).collection("Applicants").onSnapshot(async (snapshot) => {
-            async function geter() {
-                var temp = []
-                for (let doc of snapshot.docs) {
-                    const snapsho = await db.collection('Students').doc(doc.data().uid).get()
-                    temp.push({
-                        name: snapsho.data().sname,
-                        sid: snapsho.data().sid,
-                        email: snapsho.data().semail,
-                        resume: snapsho.data().resume,
-                    })
-                }
-                console.log(temp)
-                return temp;
-            }
-            await setApplicant(await geter())
-            //console.log(applicant)
-            localStorage.setItem('data', JSON.stringify(await geter()))
-            window.open('applicants-list')
-        })
-    }
-
     return (
         <div className="box">
             <div className="company-name">{props.cname}</div>
@@ -67,9 +61,6 @@ function Companies(props) {
                 </div>
                 <div style={{ display: localStorage.getItem("type") === 'admin' ? 'none' : 'block' }} className="Apply">
                     {click ? <button onClick={apply} type="submit">Apply </button> : <></>}
-                </div>
-                <div style={{ display: localStorage.getItem("type") === 'admin' ? 'block' : 'none' }} className="Apply">
-                    {click ? <button onClick={() => applicants()}>Applicants </button> : <></>}
                 </div>
             </div>
         </div>

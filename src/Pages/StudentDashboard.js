@@ -1,6 +1,7 @@
 import React from "react";
 import { useEffect, useState } from "react";
 import InsertChartIcon from "@mui/icons-material/InsertChart";
+import HistoryIcon from '@mui/icons-material/History';
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import HelpIcon from "@mui/icons-material/Help";
@@ -16,11 +17,46 @@ import { useHistory } from "react-router"
 import { Avatar } from "@mui/material";
 import { storage } from "../Firebase";
 import { Bar } from 'react-chartjs-2';
+import Students from "./Students";
 
 function StudentDashboard() {
   var [click, setClick] = useState('dash')
-  var [cName, setCName] = useState(["active", "", "", ""])
+  var [cName, setCName] = useState(["active", "", "", "",""])
   var [companies, setCompanies] = useState([]);
+  const [insights, setInsights] = useState({});
+  const [chartData, setChartData] = useState({});
+
+  useEffect(() => {
+    // fetch all insights data from firebase and set it to the insights state
+    const fetchData = async () => {
+      const insightsRef = db.collection("insights");
+      const snapshot = await insightsRef.get();
+      const data = snapshot.docs.reduce((obj, doc) => {
+        obj[doc.id] = doc.data().value;
+        return obj;
+      }, {});
+      setInsights(data);
+    };
+    fetchData();
+  }, []);
+  
+  useEffect(() => {
+    // transform insights data into chart data
+    const chartLabels = Object.keys(insights);
+    const chartValues = Object.values(insights);
+    const data = {
+      labels: chartLabels,
+      datasets: [
+        {
+          label: "Insights",
+          data: chartValues,
+          backgroundColor: "rgba(75,192,192,1)",
+          borderWidth: 1,
+        },
+      ],
+    };
+    setChartData(data);
+  }, [insights]);
   useEffect(() => {
     db.collection("Companies").onSnapshot((snapshot) => {
       var temp = []
@@ -39,7 +75,7 @@ function StudentDashboard() {
       setCompanies(temp);
     });
   }, []);
-
+  console.log(companies)
   const history = useHistory();
   async function logOut(event) {
     event.preventDefault();
@@ -51,20 +87,20 @@ function StudentDashboard() {
       
     }
   }
-
+  const [id,setId] = useState();
   useEffect(() => {
     auth.onAuthStateChanged(user => {
       if (user) {
         db.collection('Students').onSnapshot(snapshot => {
           details(user);
           studDetails(user);
+          setId(user.uid);
         })
       }
     });
   }, []);
 
   const [userdata, setuserdata] = useState()
-
   const details = (user) => {
     if (user) {
       db.collection('Students').doc(user.uid).get().then(doc => {
@@ -78,6 +114,7 @@ function StudentDashboard() {
       })
     }
   }
+  
   const [uDetails, setUDetails] = useState()
   const studDetails = (user) => {
     if (user) {
@@ -107,7 +144,6 @@ function StudentDashboard() {
     setStdgender(uDetails.gender);
     setStdcontact(uDetails.contact);
   }
-
   const [fileUrl, setFileUrl] = useState()
   const onChange = async (e) => {
     const file = e.target.files[0]
@@ -140,18 +176,15 @@ function StudentDashboard() {
     catch {
     }
   };
-
-
-  const [feed, setfeed] = useState('')
-
+console.log(id);
   const feedBack = (e) => {
     e.preventDefault();
-    setfeed(document.getElementById('feed').value)
+    const fed= document.getElementById('feed').value ;
     auth.onAuthStateChanged(user => {
       if (user) {
         db.collection('Feedback').doc(user.uid).set({
           uid : user.uid,
-          feedback : feed,
+          feedback : fed,
         })
         document.getElementById('feed').value = ''
       }
@@ -178,7 +211,7 @@ function StudentDashboard() {
         <div className="sidebar-menu">
           <ul>
             <li>
-              <div id="a" className={cName[0]} onClick={() => { setCName(["active", "", "", ""]); setClick('dash'); }}>
+              <div id="a" className={cName[0]} onClick={() => { setCName(["active", "", "", "",""]); setClick('dash'); }}>
                 <span>
                   <DashboardIcon />
                 </span>
@@ -189,7 +222,7 @@ function StudentDashboard() {
               <div
                 id="a" className={cName[1]}
                 onClick={() => {
-                  setCName(["", "active", "", ""]);
+                  setCName(["", "active", "", "",""]);
                   setClick('acc');
                 }}>
                 <span>
@@ -202,7 +235,7 @@ function StudentDashboard() {
               <div
                 id="a" className={cName[2]}
                 onClick={() => {
-                  setCName(["", "", "active", ""]);
+                  setCName(["", "", "active", "",""]);
                   setClick('setting')
                 }}>
                 <span>
@@ -212,7 +245,7 @@ function StudentDashboard() {
               </div>
             </li>
             <li>
-              <div id="a" className={cName[3]} onClick={() => { setCName(["", "", "", "active", ""]); setClick('feedback'); }}>
+              <div id="a" className={cName[3]} onClick={() => { setCName(["", "", "", "active", "",""]); setClick('feedback'); }}>
                 <span>
                   <FeedbackIcon />
                 </span>
@@ -222,7 +255,7 @@ function StudentDashboard() {
 
             <li>
               <div id="a" className={cName[4]} onClick={() => {
-                setCName(["", "", "", "","active"]);
+                setCName(["", "", "", "","active",""]);
                 setClick('Help')
               }}>
                 <span>
@@ -233,12 +266,22 @@ function StudentDashboard() {
             </li>
             <li>
               <div id="a" className={cName[5]} onClick={() => {
-                setCName(["", "", "", "","","active"]);
+                setCName(["", "", "", "","","active",""]);
                 setClick('Insights')}}>
                 <span>
                   <InsertChartIcon />
                 </span>
                 <span>Insights</span>{" "}
+              </div>
+            </li>
+            <li>
+              <div id="a" className={cName[6]} onClick={() => {
+                setCName(["", "", "", "","","","active"]);
+                setClick('History')}}>
+                <span>
+                  <HistoryIcon />
+                </span>
+                <span>History</span>{" "}
               </div>
             </li>
           </ul>
@@ -270,11 +313,10 @@ function StudentDashboard() {
         <main>
           <div className="cards">
             {click === 'dash' ? <div className="card-single">
-            {console.log(uDetails)}
               {companies.map((company) => {
                 return (
                   <Companies
-                    cname={company.cname}
+                    cname={company.cname}  
                     title={company.title}
                     cutOff={company.cutOff}
                     branches={company.branches}
@@ -282,6 +324,7 @@ function StudentDashboard() {
                     description={company.description}
                     docid={company.docid}
                     userdata = {userdata}
+                    id={id}
                   />
                 );
               })}
@@ -343,7 +386,7 @@ function StudentDashboard() {
                         <input name='gender' type='radio' value="others" onChange={(e) => setStdgender(e.target.value)} /> Others &emsp;
                       </div>
                       <div>
-                        Contact : <input type='tel' pattern="[0-9]*{10}" value={stdcontact} onChange={(e) => setStdcontact(e.target.value)} />
+                        Contact : <input type='tel' value={stdcontact} onChange={(e) => setStdcontact(e.target.value)} />
                       </div>
                       <div>
                         Upload Resume : <input type='file' accept='.pdf' onChange={onChange} />
@@ -364,35 +407,21 @@ function StudentDashboard() {
                   <textarea name="feedback" id="feed" cols="80" rows="10"></textarea>
                   <input type="submit" value="submit"/>
                 </form> 
-                </div>: <><Bar
-                                data={{
-                                  labels: ['2014-2015', '2015-2016', '2016-2017', '2017-2018', '2018-2019', '2019-2020'],
-                                  datasets: [{
-                                    label: 'No of Students Selected',
-                                    data: [1176, 1335, 1363, 961, 1217, 1219],
-                                    backgroundColor: [
-                                        'rgba(255, 99, 132, 0.2)',
-                                        'rgba(54, 162, 235, 0.2)',
-                                        'rgba(255, 206, 86, 0.2)',
-                                        'rgba(75, 192, 192, 0.2)',
-                                        'rgba(153, 102, 255, 0.2)',
-                                        'rgba(255, 159, 64, 0.2)'
-                                    ],
-                                    borderColor: [
-                                        'rgba(255, 99, 132, 1)',
-                                        'rgba(54, 162, 235, 1)',
-                                        'rgba(255, 206, 86, 1)',
-                                        'rgba(75, 192, 192, 1)',
-                                        'rgba(153, 102, 255, 1)',
-                                        'rgba(255, 159, 64, 1)'
-                                    ],
-                                    borderWidth: 2
-                                }]
-                                }}
-                                    height={400}
-                                    width={500}
-                                    options={{ maintainAspectRatio: false }}
-                                /></>}
+                </div>: click === 'Insights' ? 
+                <Bar data={chartData} />
+                :<>
+                  {companies.map((company) => {
+                    return (
+                      <Students
+                        cname={company.cname} 
+                        date={company.date}
+                        title={company.title}
+                        docid={company.docid}
+                        id={id}
+                      />
+                    );
+              })}
+                </>}
           </div>
         </main>
       </div>
