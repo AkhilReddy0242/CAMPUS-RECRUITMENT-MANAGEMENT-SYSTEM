@@ -1,8 +1,12 @@
 /* import firebase from 'firebase/compat/app';
 import 'firebase//compat/firestore';*/
 //import { getStorage } from "firebase/storage";
-
-import firebase from "firebase";
+//not working
+//import firebase from 'firebase';
+import firebase from 'firebase/compat/app';
+import 'firebase/compat/auth';
+import 'firebase/compat/firestore';
+import 'firebase/compat/storage';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBIQMQEsOfJNio7J_yqWiw0GfB3L82IdPM",
@@ -13,16 +17,15 @@ const firebaseConfig = {
   appId: "1:871035678645:web:1c48ef902dc906f6a7f3fc",
   measurementId: "G-2TK9DHXZES"
 };
+
 const firebaseApp = firebase.initializeApp(firebaseConfig);
-
 const db = firebaseApp.firestore();
-const batch = firebase.firestore().batch();
+const batch = db.batch();
 const auth = firebaseApp.auth();
-//const storage = getStorage(firebaseApp);
-const storage = firebase.storage();
+const storage = firebaseApp.storage();
 
+export { db, auth, storage, batch };
 
-export { db, auth, storage, batch};
 
 /* const firebaseApp = firebase.initializeApp(firebaseConfig);
 const storage = getStorage(firebaseApp);

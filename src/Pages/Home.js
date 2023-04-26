@@ -6,7 +6,7 @@ import './Home.css'
 function Home(){
 return <>
 <Nav/>
-<img alt='KMIT'  src='./Images/KMIT.jpg'/>
+<img id="Images" alt='KMIT'  src='./Images/KMIT.jpg' />
 <div className='footer'>
             <div className="footer-container">
                 <div className="about">

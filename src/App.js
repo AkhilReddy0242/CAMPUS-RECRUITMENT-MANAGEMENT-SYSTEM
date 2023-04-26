@@ -5,10 +5,8 @@ import StudentDashboard from "./Pages/StudentDashboard";
 import Applications from "./Pages/Applications";
 import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 import { useEffect } from "react";
-import { auth } from "./Firebase";
-
+import {auth} from './Firebase'
 function App() {
-  //const [currentUser, setCurrentUser] = useState();
 
 
   useEffect(() => {
@@ -18,7 +16,6 @@ function App() {
     });
     return unsubscribe;
   }, []);
-
   return (
     <Router>
       <Switch>

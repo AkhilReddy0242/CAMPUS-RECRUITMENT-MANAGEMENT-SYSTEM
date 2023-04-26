@@ -24,9 +24,8 @@ function Dashboard() {
   var [cName, setCName] = useState(["active", "", "", "", ""])
   const [selectedStudentIds, setSelectedStudentIds] = useState([]);
   const [selectedCompanies, setSelectedComapnies] = useState([]);
-
-
-
+  const d= new Date();
+  const today=d.getFullYear()+ '-' + ((d.getMonth()+1)<10?('0'+(d.getMonth()+1)):((d.getMonth()+1))  )+ '-' + d.getDate();
   const [selectedYear, setSelectedYear] = useState("");
   const [insights, setInsights] = useState({});
   const [chartData, setChartData] = useState({});
@@ -108,7 +107,6 @@ function Dashboard() {
   };
 
   const handleAddInsight = async () => {
-    console.log(selectedYear)
     if(selectedYear==="")
     {
       window.confirm("Please select the year");
@@ -164,7 +162,6 @@ function Dashboard() {
 
   const deleteSelectedComapnies = async () => {
     try {
-      console.log(selectedCompanies)
       // Delete student documents and corresponding authentication
       for (const companyID of selectedCompanies) {
         const companyRef = db.collection("Companies").doc(companyID);
@@ -202,15 +199,12 @@ function Dashboard() {
       console.error(`Error deleting selected students and their authentication: ${error.message}`);
     }
   };
-  var [clicker, setClicker] = useState(false)
   const [applicant, setApplicant] = useState([])
     const applicants = async (docid) => {
-      console.log(docid);
         db.collection("Companies").doc(docid).collection("Applicants").onSnapshot(async (snapshot) => {
             async function geter() {
                 var temp = []
                 for (let doc of snapshot.docs) {
-                  console.log(doc)
                     const snapsho = await db.collection('Students').doc(doc.data().uid).get();
                     temp.push({
                         name: snapsho.data().sname,
@@ -219,7 +213,6 @@ function Dashboard() {
                         resume: snapsho.data().resume,
                     })
                 }
-                console.log(temp)
                 return temp;
             }
             await setApplicant(await geter())
@@ -262,6 +255,15 @@ function Dashboard() {
       );
     });
   }, []);
+  students.sort((a, b) => {
+    if (a.sname < b.sname) {
+      return -1;
+    }
+    if (a.sname > b.sname) {
+      return 1;
+    }
+    return 0;
+  });
 
   const addStudent = (e) => {
     e.preventDefault();
@@ -274,7 +276,8 @@ function Dashboard() {
     {
       try {
         auth.createUserWithEmailAndPassword(email, password).then(cred => {
-          console.log(cred.user.uid);
+          const user1=cred.user;
+          console.log(user1.uid);
           db.collection('Students').doc(cred.user.uid).set({
             sname: sname,
             sid: password,
@@ -326,12 +329,10 @@ function Dashboard() {
     let cutOff = document.getElementById("cutOff").value;
     let branch = document.getElementById("branch").value;
     const date = document.getElementById("date").value;
-    console.log(date);
     const currentDate2 = new Date();
     const date1=new Date(date);
     if(date1 < currentDate2)
     {
-      console.log(date+"is present");
       alert("enter the future date");
       return;
     }
@@ -485,14 +486,10 @@ function Dashboard() {
                                         <div className="min-qualify">Cut off : {company.cutOff}</div>
                                         <div className="eligible">Eligible branches : {company.branches}</div>
                                         <div className="last-date">Last Date to Apply : {company.date}</div>
-                                        {clicker ? <div classname='description'>Job Description : <br /> {company.description}</div> : <></>}
-                                        {clicker ? <></> : <div className="viewmore" onClick={() => { setClicker(true) }}> View more&gt; </div>}
+                                         <div classname='description'>Job Description : <br /> {company.description}</div> 
                                         <div className="buttons">
-                                            <div className="Cancel">
-                                                {clicker ? <button onClick={() => { setClicker(false) }} >Cancel</button> : <></>}
-                                            </div>
                                             <div style={{ display: localStorage.getItem("type") === 'admin' ? 'block' : 'none' }} className="Apply">
-                                                {clicker ? <button onClick={() => applicants(company.docid)}>Applicants </button> : <></>}
+                                                <button onClick={() => applicants(company.docid)}>Applicants </button>
                                             </div>
                                         </div>
                                     </div>
@@ -506,7 +503,7 @@ function Dashboard() {
                               <input placeholder="Student Name" id="sname" required />
                               <input placeholder="Student Id" id="suser" required />
                               <input type ="email" placeholder="Email Id" id="semail" required />
-                              <input type ="submit" value="Add Student" onClick={addStudent}/>
+                              <input type="submit" onClick={addStudent} value="Add student"/>
                               </form>
                               </div>
                             </div>: click==='viewstudent'?
@@ -551,12 +548,13 @@ function Dashboard() {
                             ></textarea>
                             <input id="branch" placeholder="Eligible Branches" />
                             <input id="cutOff" placeholder="Cut-Off" />
-                            <input id="date" type ="date" />
+                            <input id="date" min={today} type ="date" />
                             <button type ="submit" onClick={addCompany}>
                             Add Company
                             </button>
                             </form>
                             </div>
+                            {/*View Company Details*/}
                             </div>: click==='viewcompany'?
                             <div>
                                 <Button
@@ -615,7 +613,9 @@ function Dashboard() {
                                         <div class="add-year-container">
                                         <button class="add-button" onClick={handleAddInsight}>Add</button> &emsp; &emsp;
                                           <button class="add-year-button" onClick={handleAddYear}>Add Year</button>&emsp; &emsp;
-                                          <button class="add-year-button" onClick={handleDeleteYear}>Delete Year</button>
+                                          <Button variant="contained"
+                                    color="error"
+                                    startIcon={<Delete />} onClick={handleDeleteYear}>Delete Year</Button>
                                         </div>
                                       </div>
                                     </div>

@@ -25,6 +25,32 @@ function StudentDashboard() {
   var [companies, setCompanies] = useState([]);
   const [insights, setInsights] = useState({});
   const [chartData, setChartData] = useState({});
+  const [id,setId] = useState();
+  useEffect(() => {
+    auth.onAuthStateChanged(user => {
+      if (user) {
+        db.collection('Students').onSnapshot(snapshot => {
+          details(user);
+          studDetails(user);
+          setId(user.uid);
+        })
+      }
+    });
+  }, []);
+  const [userdata, setuserdata] = useState();
+  const details = (user) => {
+    if (user) {
+      db.collection('Students').doc(user.uid).get().then(doc => {
+        // if (localStorage.getItem('type') == 'user') {
+          setuserdata(doc.data());
+          const html = `
+        <h3>${doc.data().sname}</h3>
+        <h6>${doc.data().sid}</h6>`;
+          document.getElementById('userDetails').innerHTML = html;
+        // }
+      })
+    }
+  }
 
   useEffect(() => {
     // fetch all insights data from firebase and set it to the insights state
@@ -75,7 +101,6 @@ function StudentDashboard() {
       setCompanies(temp);
     });
   }, []);
-  console.log(companies)
   const history = useHistory();
   async function logOut(event) {
     event.preventDefault();
@@ -87,34 +112,6 @@ function StudentDashboard() {
       
     }
   }
-  const [id,setId] = useState();
-  useEffect(() => {
-    auth.onAuthStateChanged(user => {
-      if (user) {
-        db.collection('Students').onSnapshot(snapshot => {
-          details(user);
-          studDetails(user);
-          setId(user.uid);
-        })
-      }
-    });
-  }, []);
-
-  const [userdata, setuserdata] = useState()
-  const details = (user) => {
-    if (user) {
-      db.collection('Students').doc(user.uid).get().then(doc => {
-        // if (localStorage.getItem('type') == 'user') {
-          setuserdata(doc.data());
-          const html = `
-        <h3>${doc.data().sname}</h3>
-        <h6>${doc.data().sid}</h6>`;
-          document.getElementById('userDetails').innerHTML = html;
-        // }
-      })
-    }
-  }
-  
   const [uDetails, setUDetails] = useState()
   const studDetails = (user) => {
     if (user) {
@@ -176,7 +173,6 @@ function StudentDashboard() {
     catch {
     }
   };
-console.log(id);
   const feedBack = (e) => {
     e.preventDefault();
     const fed= document.getElementById('feed').value ;
@@ -315,6 +311,8 @@ console.log(id);
             {click === 'dash' ? <div className="card-single">
               {companies.map((company) => {
                 return (
+                  new Date(company.date) >= new Date() 
+                  &&
                   <Companies
                     cname={company.cname}  
                     title={company.title}
