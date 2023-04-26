@@ -2,8 +2,8 @@ import React from 'react';
 import { useEffect } from 'react';
 import "./Applications.css";
 function Applications() {
-    useEffect(async() => {
-        let data = await JSON.parse(localStorage.getItem('data'));
+    useEffect(() => {
+        let data =JSON.parse(localStorage.getItem('data'));
          var str = "";
         for(let i of data)
         {

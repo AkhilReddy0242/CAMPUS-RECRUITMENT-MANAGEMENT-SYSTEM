@@ -141,14 +141,12 @@ function Dashboard() {
   const handleInputChange = (event) => {
     setInputValue(event.target.value);
   };
-
-
   const handleCheckboxChange = event => {
-    const value= event.target.value;
+    const {name, id , value} = event.target;
     if (event.target.checked) {
-      setSelectedStudentIds([...selectedStudentIds, value]);
+      setSelectedStudentIds([...selectedStudentIds, {name,id ,value}]);
     } else {
-      setSelectedStudentIds(selectedStudentIds.filter(id => id !== value));
+      setSelectedStudentIds(selectedStudentIds.filter(item => item.value !== value));
     }
   };
   const handleCheckboxChangeforCompany = event => {
@@ -183,15 +181,26 @@ function Dashboard() {
       console.log(selectedStudentIds)
       // Delete student documents and corresponding authentication
       for (const studentId of selectedStudentIds) {
-        const studentRef = db.collection("Students").doc(studentId);
-        //const authUser = await auth.getUser(studentId);
-        //const authRef = auth.deleteUser(studentId);
-        batch.delete(studentRef);
-       // batch.delete(authRef);
+        const email =studentId.name;
+        const pwd= studentId.id;
+        const ids=studentId.value;
+        console.log(email + " ---"+pwd+" -----------"+ids);
+        
+        const studentRef = db.collection("Students").doc(ids);
+        studentRef.delete();
+        auth.signInWithEmailAndPassword(email,pwd).then((cred)=>{
+          auth.currentUser.delete().then(()=>{
+            console.log("particular user has been deleted"+email)
+          }).catch((error)=>{
+            console.log(error);
+          });
+        }).catch((error)=>{
+          console.log(error);
+        });
       }
 
       // Commit the batch
-      await batch.commit();
+      //await batch.commit();
 
       console.log("Selected students and their authentication have been successfully deleted.");
       setSelectedStudentIds([]);
@@ -199,23 +208,30 @@ function Dashboard() {
       console.error(`Error deleting selected students and their authentication: ${error.message}`);
     }
   };
-  const [applicant, setApplicant] = useState([])
+  //const [applicant, setApplicant] = useState([])
     const applicants = async (docid) => {
         db.collection("Companies").doc(docid).collection("Applicants").onSnapshot(async (snapshot) => {
             async function geter() {
                 var temp = []
                 for (let doc of snapshot.docs) {
-                    const snapsho = await db.collection('Students').doc(doc.data().uid).get();
-                    temp.push({
-                        name: snapsho.data().sname,
-                        sid: snapsho.data().sid,
-                        email: snapsho.data().semail,
-                        resume: snapsho.data().resume,
+                    await db.collection('Students').doc(doc.data().uid).get().then((doct)=>{
+                      if(doct.exists){
+                        console.log(doct.data().sname)
+                        temp.push({
+                          name: doct.data().sname,
+                          sid: doct.data().sid,
+                          email: doct.data().semail,
+                          resume: doct.data().resume,
+                      })
+                      }
+                    }).catch((error)=>{
+                      console.log(error);
                     })
+                    
                 }
                 return temp;
             }
-            await setApplicant(await geter())
+            //await setApplicant(await geter())
             //console.log(applicant)
             localStorage.setItem('data', JSON.stringify(await geter()))
             window.open('applicants-list')
@@ -506,6 +522,7 @@ function Dashboard() {
                               <input type="submit" onClick={addStudent} value="Add student"/>
                               </form>
                               </div>
+                              {/* View Student Details */}
                             </div>: click==='viewstudent'?
                             <div className="stud">
                                 <div>
@@ -520,8 +537,7 @@ function Dashboard() {
                                 {students.map(student => (
                                     <div key={student.id}>
                                       <div className="student-box">
-                                        <input type="checkbox"  name="selectedStudents" value={student.id}
-                                        checked={selectedStudentIds.includes(student.id)}
+                                        <input type="checkbox"  name={student.semail} id={student.suser} value={student.id}
                                             onChange={handleCheckboxChange}/>
                                         <div className="student-name" >Name : {student.sname}</div>
                                         <div className="student-roll" >Roll no : {student.suser}</div>

@@ -12,7 +12,6 @@ function App() {
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
      // setCurrentUser(user);
-      localStorage.setItem('uid',user.uid);
     });
     return unsubscribe;
   }, []);
