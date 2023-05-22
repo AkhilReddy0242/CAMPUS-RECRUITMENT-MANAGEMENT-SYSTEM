@@ -224,7 +224,7 @@ function StudentDashboard() {
                 <span>
                   <AccountCircleIcon />
                 </span>
-                <span>Account</span>{" "}
+                <span>Profile</span>{" "}
               </div>
             </li>
             <li>
@@ -328,7 +328,7 @@ function StudentDashboard() {
               })}
             </div> : click === 'acc' ?
               <div className="account-info">
-                <div className="title">Account Details</div>
+                <div className="title">Student Details</div>
                 <div>
                   Name &nbsp;&nbsp; : {uDetails.stname}<br />
                   Roll No&nbsp;&nbsp;: {uDetails.roll}<br />
@@ -379,9 +379,9 @@ function StudentDashboard() {
                         CGPA : <input type='text' value={stdCgpa} onChange={(e) => setStdCgpa(e.target.value)} />
                       </div>
                       <div>
-                        Gender : <input name='gender' type='radio' value="male" onChange={(e) => setStdgender(e.target.value)} /> Male &emsp;
-                        <input name='gender' type='radio' value="female" onChange={(e) => setStdgender(e.target.value)} /> Female &emsp;
-                        <input name='gender' type='radio' value="others" onChange={(e) => setStdgender(e.target.value)} /> Others &emsp;
+                        Gender : <input name='gender' type='radio' value="Male" onChange={(e) => setStdgender(e.target.value)} /> Male &emsp;
+                        <input name='gender' type='radio' value="Female" onChange={(e) => setStdgender(e.target.value)} /> Female &emsp;
+                        <input name='gender' type='radio' value="Others" onChange={(e) => setStdgender(e.target.value)} /> Others &emsp;
                       </div>
                       <div>
                         Contact : <input type='tel' value={stdcontact} onChange={(e) => setStdcontact(e.target.value)} />

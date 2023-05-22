@@ -427,9 +427,7 @@ function Dashboard() {
             <li>
               <div
                 id="a" className={cName[2]} onClick={() => { setCName(["", "", "active", "", ""]); setClick('viewstudent'); }}>
-                {/**document.getElementsByClassName(
-                    "view-students"
-                  )[0].style.display = "block"; */}
+                
                 <span>
                   <PersonSearchIcon />
                 </span>
@@ -449,10 +447,10 @@ function Dashboard() {
 
             <li>
               <div id="a" className={cName[4]} onClick={() => { setCName(["", "", "", "", "active"]); setClick('viewcompany'); }}>
-                <span>
+                <span>  
                   <BusinessIcon />
                 </span>
-                <span>View Companies</span>{" "}
+                <span>Delete Companies</span>{" "}
               </div>
             </li>
             <li>

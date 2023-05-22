@@ -23,7 +23,7 @@ return <>
                 </div>
             </div>
             <div className="bottom">
-                <h2>KMIt PLACEMENTS</h2>
+                <h2>KMIT PLACEMENTS</h2>
                 &copy; Anreddy Akhil Reddy , Gouni Anusha ,Munukuntla Bhavana, Padakanti Bhanu Sri
                 &emsp; &emsp; &emsp; &emsp; &emsp; &emsp; Follow Us : <a href="https://www.instagram.com/akhil_reddy_02/"> <InstagramIcon/> </a>
                 &emsp;<a href="https://twitter.com/AkhilRe48335619"><TwitterIcon/></a>
