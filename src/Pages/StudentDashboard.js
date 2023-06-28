@@ -143,12 +143,18 @@ function StudentDashboard() {
   }
   const [fileUrl, setFileUrl] = useState()
   const onChange = async (e) => {
-    const file = e.target.files[0]
-    const storageRef = storage.ref()
-    const fileRef = storageRef.child('resumes/' + file.name)
-    await fileRef.put(file)
-    setFileUrl(await fileRef.getDownloadURL())
-     console.log(fileUrl)
+    try{
+      const file = e.target.files[0]
+      const storageRef = storage.ref()
+      const fileRef = storageRef.child('resumes/' + file.name)
+      await fileRef.put(file)
+      setFileUrl(await fileRef.getDownloadURL())
+      console.log(fileUrl)
+    }
+    catch(e)
+    {
+      console.log(e)
+    }
   }
   const upDate = (e) => {
     e.preventDefault();

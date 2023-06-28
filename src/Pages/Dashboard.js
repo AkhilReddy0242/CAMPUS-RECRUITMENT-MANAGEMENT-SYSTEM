@@ -290,7 +290,6 @@ function Dashboard() {
     console.log(students);
     if(password.length>=6)
     {
-      try {
         auth.createUserWithEmailAndPassword(email, password).then(cred => {
           const user1=cred.user;
           console.log(user1.uid);
@@ -303,13 +302,14 @@ function Dashboard() {
             cgpa: "",//document.getElementById('cgpa').value,
             resume: "",
             contact: "",// document.getElementById('contact').value,
-          })
+          }).catch(e => window.alert(e.message))
+          window.confirm("Student Added");
+        }).catch((e) =>{
+          window.alert(e.message);
+          return;
         });
-        window.confirm("Student Added");
+        
       document.getElementById("sform").reset();
-      }
-      catch {
-      }
       
     }
     else{
